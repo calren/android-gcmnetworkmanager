@@ -159,10 +159,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Constraints periodicTaskConstraints = new Constraints.Builder()
                 .build();
 
-        PeriodicWorkRequest periodicTaskRequest =
-                new PeriodicWorkRequest.Builder(PeriodicTaskWorker.class, 30, TimeUnit.SECONDS)
-                        .setConstraints(periodicTaskConstraints)
-                        .build();
+
 
         WorkManager.getInstance(this).getWorkInfoByIdLiveData(periodicTaskRequest.getId())
                 .observe(this, new Observer<WorkInfo>() {
@@ -177,12 +174,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         WorkManager.getInstance(this).enqueue(periodicTaskRequest);
     }
 
+    PeriodicWorkRequest periodicTaskRequest =
+            new PeriodicWorkRequest.Builder(PeriodicTaskWorker.class, 30, TimeUnit.SECONDS)
+                    .setConstraints(new Constraints.Builder().build())
+                    .build();
+
     public void stopPeriodicTask() {
         Log.d(TAG, "stopPeriodicTask");
 
-        // [START stop_periodic_task]
-        mGcmNetworkManager.cancelTask(TASK_TAG_PERIODIC, MyTaskService.class);
-        // [END stop_per
+        WorkManager.getInstance(this).cancelWorkById(periodicTaskRequest.getId());
     }
 
     private void checkPlayServicesAvailable() {
