@@ -25,8 +25,15 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.Observer;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+import androidx.work.Constraints;
+import androidx.work.NetworkType;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.WorkInfo;
+import androidx.work.WorkManager;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
@@ -107,14 +114,36 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void startChargingTask() {
         Log.d(TAG, "startChargingTask");
 
-        OneoffTask task = new OneoffTask.Builder()
-                .setService(MyTaskService.class)
-                .setTag(TASK_TAG_CHARGING)
-                .setExecutionWindow(0L, 3600L)
+//        OneoffTask task = new OneoffTask.Builder()
+//                .setService(MyTaskService.class)
+//                .setTag(TASK_TAG_CHARGING)
+//                .setExecutionWindow(0L, 3600L)
+//                .setRequiresCharging(true)
+//                .build();
+//
+//        mGcmNetworkManager.schedule(task);
+
+        Constraints uploadConstraints = new Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.CONNECTED)
                 .setRequiresCharging(true)
                 .build();
 
-        mGcmNetworkManager.schedule(task);
+        OneTimeWorkRequest chargingTaskRequest =
+                new OneTimeWorkRequest.Builder(ChargingTaskWorker.class)
+                        .setConstraints(uploadConstraints)
+                        .build();
+
+        WorkManager.getInstance(this).getWorkInfoByIdLiveData(chargingTaskRequest.getId())
+                .observe(this, new Observer<WorkInfo>() {
+                    @Override
+                    public void onChanged(@Nullable WorkInfo workInfo) {
+                        if (workInfo != null && workInfo.getState() == WorkInfo.State.SUCCEEDED) {
+                            Log.i(TAG, "Charging task complete");
+                        }
+                    }
+                });
+
+        WorkManager.getInstance(this).enqueue(chargingTaskRequest);
     }
 
     public void startWifiTask() {
