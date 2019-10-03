@@ -32,6 +32,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.work.Constraints;
 import androidx.work.NetworkType;
 import androidx.work.OneTimeWorkRequest;
+import androidx.work.PeriodicWorkRequest;
 import androidx.work.WorkInfo;
 import androidx.work.WorkManager;
 
@@ -41,6 +42,8 @@ import com.google.android.gms.gcm.GcmNetworkManager;
 import com.google.android.gms.gcm.OneoffTask;
 import com.google.android.gms.gcm.PeriodicTask;
 import com.google.android.gms.gcm.Task;
+
+import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -163,13 +166,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //
 //        mGcmNetworkManager.schedule(task);
 //        // [END start_one_off_task]
-        
+
         Constraints wifiTaskConstraints = new Constraints.Builder()
                 .setRequiredNetworkType(NetworkType.UNMETERED)
                 .build();
 
         OneTimeWorkRequest wifiTaskRequest =
-                new OneTimeWorkRequest.Builder(ChargingTaskWorker.class)
+                new OneTimeWorkRequest.Builder(WifiTaskWorker.class)
                         .setConstraints(wifiTaskConstraints)
                         .build();
 
@@ -189,15 +192,35 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void startPeriodicTask() {
         Log.d(TAG, "startPeriodicTask");
 
-        // [START start_periodic_task]
-        PeriodicTask task = new PeriodicTask.Builder()
-                .setService(MyTaskService.class)
-                .setTag(TASK_TAG_PERIODIC)
-                .setPeriod(30L)
+//        // [START start_periodic_task]
+//        PeriodicTask task = new PeriodicTask.Builder()
+//                .setService(MyTaskService.class)
+//                .setTag(TASK_TAG_PERIODIC)
+//                .setPeriod(30L)
+//                .build();
+//
+//        mGcmNetworkManager.schedule(task);
+//        // [END start_periodic_task]
+
+        Constraints periodicTaskConstraints = new Constraints.Builder()
                 .build();
 
-        mGcmNetworkManager.schedule(task);
-        // [END start_periodic_task]
+        PeriodicWorkRequest periodicTaskRequest =
+                new PeriodicWorkRequest.Builder(PeriodicTaskWorker.class, 30, TimeUnit.SECONDS)
+                        .setConstraints(periodicTaskConstraints)
+                        .build();
+
+        WorkManager.getInstance(this).getWorkInfoByIdLiveData(periodicTaskRequest.getId())
+                .observe(this, new Observer<WorkInfo>() {
+                    @Override
+                    public void onChanged(@Nullable WorkInfo workInfo) {
+                        if (workInfo != null && workInfo.getState() == WorkInfo.State.SUCCEEDED) {
+                            Log.i(TAG, "Periodic task complete");
+                        }
+                    }
+                });
+
+        WorkManager.getInstance(this).enqueue(periodicTaskRequest);
     }
 
     public void stopPeriodicTask() {
