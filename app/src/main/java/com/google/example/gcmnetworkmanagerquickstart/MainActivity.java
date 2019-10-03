@@ -50,35 +50,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private static final String TAG = "MainActivity";
     private static final int RC_PLAY_SERVICES = 123;
 
-    public static final String TASK_TAG_WIFI = "wifi_task";
-    public static final String TASK_TAG_CHARGING = "charging_task";
     public static final String TASK_TAG_PERIODIC = "periodic_task";
-
-    private GcmNetworkManager mGcmNetworkManager;
-    private BroadcastReceiver mReceiver;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        // [START get_gcm_network_manager]
-        mGcmNetworkManager = GcmNetworkManager.getInstance(this);
-        // [END get_gcm_network_manager]
-
-        // BroadcastReceiver to get information from MyTaskService about task completion.
-        mReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                if (intent.getAction().equals(MyTaskService.ACTION_DONE)) {
-                    String tag = intent.getStringExtra(MyTaskService.EXTRA_TAG);
-                    int result = intent.getIntExtra(MyTaskService.EXTRA_RESULT, -1);
-
-                    String msg = String.format("DONE: %s (%d)", tag, result);
-                    Toast.makeText(context, msg, Toast.LENGTH_SHORT).show();
-                }
-            }
-        };
 
         findViewById(R.id.button_start_wifi_task).setOnClickListener(this);
         findViewById(R.id.button_start_charging_task).setOnClickListener(this);
@@ -90,28 +66,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         // but the API does not use GoogleApiClient, which would normally perform the check
         // automatically.
         checkPlayServicesAvailable();
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(MyTaskService.ACTION_DONE);
-
-        LocalBroadcastManager manager = LocalBroadcastManager.getInstance(this);
-        manager.registerReceiver(mReceiver, filter);
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-
-        LocalBroadcastManager manager = LocalBroadcastManager.getInstance(this);
-        manager.unregisterReceiver(mReceiver);
-
-        // For the purposes of this sample, cancel all tasks when the app is stopped.
-        mGcmNetworkManager.cancelAllTasks(MyTaskService.class);
     }
 
     public void startChargingTask() {

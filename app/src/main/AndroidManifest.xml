@@ -17,18 +17,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <!-- [START manifest_service] -->
-        <service
-            android:name=".MyTaskService"
-            android:exported="true"
-            android:permission="com.google.android.gms.permission.BIND_NETWORK_TASK_SERVICE">
-            <intent-filter>
-                <action android:name="com.google.android.gms.gcm.ACTION_TASK_READY" />
-            </intent-filter>
-        </service>
-        <!-- [END manifest_service] -->
-
     </application>
     <uses-permission android:name="android.permission.INTERNET" />
 
