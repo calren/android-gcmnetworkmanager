@@ -149,20 +149,41 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void startWifiTask() {
         Log.d(TAG, "startWiFiTask");
 
-        // Disable WiFi so the task does not start immediately
-        WifiManager wifi = (WifiManager) getSystemService(Context.WIFI_SERVICE);
-        wifi.setWifiEnabled(false);
-
-        // [START start_one_off_task]
-        OneoffTask task = new OneoffTask.Builder()
-                .setService(MyTaskService.class)
-                .setTag(TASK_TAG_WIFI)
-                .setExecutionWindow(0L, 3600L)
-                .setRequiredNetwork(Task.NETWORK_STATE_UNMETERED)
+//        // Disable WiFi so the task does not start immediately
+//        WifiManager wifi = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+//        wifi.setWifiEnabled(false);
+//
+//        // [START start_one_off_task]
+//        OneoffTask task = new OneoffTask.Builder()
+//                .setService(MyTaskService.class)
+//                .setTag(TASK_TAG_WIFI)
+//                .setExecutionWindow(0L, 3600L)
+//                .setRequiredNetwork(Task.NETWORK_STATE_UNMETERED)
+//                .build();
+//
+//        mGcmNetworkManager.schedule(task);
+//        // [END start_one_off_task]
+        
+        Constraints wifiTaskConstraints = new Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.UNMETERED)
                 .build();
 
-        mGcmNetworkManager.schedule(task);
-        // [END start_one_off_task]
+        OneTimeWorkRequest wifiTaskRequest =
+                new OneTimeWorkRequest.Builder(ChargingTaskWorker.class)
+                        .setConstraints(wifiTaskConstraints)
+                        .build();
+
+        WorkManager.getInstance(this).getWorkInfoByIdLiveData(wifiTaskRequest.getId())
+                .observe(this, new Observer<WorkInfo>() {
+                    @Override
+                    public void onChanged(@Nullable WorkInfo workInfo) {
+                        if (workInfo != null && workInfo.getState() == WorkInfo.State.SUCCEEDED) {
+                            Log.i(TAG, "Wifi task complete");
+                        }
+                    }
+                });
+
+        WorkManager.getInstance(this).enqueue(wifiTaskRequest);
     }
 
     public void startPeriodicTask() {
