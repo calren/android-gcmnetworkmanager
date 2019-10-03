@@ -1,13 +1,13 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 22
+    compileSdkVersion 29
     buildToolsVersion "22.0.1"
 
     defaultConfig {
         applicationId "com.google.example.gcmnetworkmanagerquickstart"
-        minSdkVersion 9
-        targetSdkVersion 22
+        minSdkVersion 14
+        targetSdkVersion 29
         versionCode 1
         versionName "1.0"
     }
@@ -22,9 +22,9 @@ android {
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     testCompile 'junit:junit:4.12'
-    compile 'com.android.support:appcompat-v7:22.1.0'
+    compile 'androidx.appcompat:appcompat:1.1.0'
 
     compile 'com.squareup.okhttp:okhttp:2.7.0'
 
-    compile 'com.google.android.gms:play-services-gcm:8.3.0'
+    compile 'com.google.android.gms:play-services-gcm:17.0.0'
 }

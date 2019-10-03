@@ -16,8 +16,9 @@
 package com.google.example.gcmnetworkmanagerquickstart;
 
 import android.content.Intent;
-import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
+
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.google.android.gms.gcm.GcmNetworkManager;
 import com.google.android.gms.gcm.GcmTaskService;
@@ -82,16 +83,19 @@ public class MyTaskService extends GcmTaskService {
     }
 
     private int doWifiTask() {
+        Log.i("Caren", "Doing wifi task");
         String url = "https://abc.xyz/";
         return fetchUrl(mClient, url);
     }
 
     private int doChargingTask() {
+        Log.i("Caren", "Doing charging task");
         String url = "http://www.nasa.gov/";
         return fetchUrl(mClient, url);
     }
 
     private int doPeriodicTask() {
+        Log.i("Caren", "Doing periodic task");
         String url = "https://google.com/";
         return fetchUrl(mClient, url);
     }
